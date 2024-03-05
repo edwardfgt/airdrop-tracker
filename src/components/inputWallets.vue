@@ -2,8 +2,40 @@
   <div>
     <textarea v-model="inputText"></textarea>
     <button @click="handleSubmit">Submit</button>
+
+    <table class="wallet-table" v-if="Object.keys(walletData).length > 0">
+      <thead>
+        <tr>
+          <th>Wallet</th>
+          <th>Transactions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(data, wallet) in walletData" :key="wallet">
+          <td>{{ wallet }}</td>
+          <td>{{ data.result.length }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
+
+<style>
+.wallet-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wallet-table th,
+.wallet-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.wallet-table th {
+  background-color: #f2f2f2;
+}
+</style>
 
 <script>
 export default {
@@ -34,6 +66,7 @@ export default {
         if (wallet) {
           const data = await this.fetchWalletData(wallet);
           this.walletData[wallet] = data;
+          console.log(data); // Log fetched data for inspection
         }
       }
 
