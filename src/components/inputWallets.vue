@@ -1,41 +1,24 @@
 <template>
-  <div>
-    <textarea v-model="inputText"></textarea>
-    <button @click="handleSubmit">Submit</button>
+  <div class="p-4">
+    <textarea v-model="inputText" class="w-full h-48 border border-gray-300 rounded-lg p-2"></textarea>
+    <button @click="handleSubmit" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">Submit</button>
 
-    <table class="wallet-table" v-if="Object.keys(walletData).length > 0">
+    <table class="wallet-table mt-4" v-if="Object.keys(walletData).length > 0">
       <thead>
         <tr>
-          <th>Wallet</th>
-          <th>Transactions</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Wallet</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Transactions</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(data, wallet) in walletData" :key="wallet">
-          <td>{{ wallet }}</td>
-          <td>{{ data.result.length }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ wallet }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ data.result.length }}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </template>
-
-<style>
-.wallet-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.wallet-table th,
-.wallet-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-
-.wallet-table th {
-  background-color: #f2f2f2;
-}
-</style>
 
 <script>
 export default {
