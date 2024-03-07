@@ -9,6 +9,7 @@
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Wallet</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Transactions</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Total gas spent</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Last Transaction</th>
         </tr>
       </thead>
       <tbody>
@@ -16,6 +17,7 @@
           <td class="border border-gray-300 px-4 py-2">{{ wallet }}</td>
           <td class="border border-gray-300 px-4 py-2">{{ data.result ? data.result.length : 0 }}</td>
           <td class="border border-gray-300 px-4 py-2">{{ data.totalUSDSpent }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ getLastTransactionTimestamp(data.result) }}</td>
         </tr>
       </tbody>
     </table>
@@ -60,9 +62,15 @@ export default {
 
       return totalUSDSpent.toFixed(2); // Round to 2 decimal places
     },
-    async getTotalUSDSpent(data) {
-      const totalUSDSpent = await this.calculateTotalUSDSpent(data);
-      return totalUSDSpent;
+    getLastTransactionTimestamp(transactions) {
+      if (!transactions || transactions.length === 0) {
+        return "No transactions";
+      }
+      
+      const timestamp = parseInt(transactions[0].timeStamp) * 1000; // Convert to milliseconds
+      const date = new Date(timestamp);
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+      return date.toLocaleString(undefined, options);
     },
     async handleSubmit() {
       const linesArray = this.inputText.split('\n');
