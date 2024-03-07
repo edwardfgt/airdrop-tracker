@@ -8,12 +8,14 @@
         <tr>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Wallet</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Transactions</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Total gas spent</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(data, wallet) in walletData" :key="wallet">
           <td class="border border-gray-300 px-4 py-2">{{ wallet }}</td>
-          <td class="border border-gray-300 px-4 py-2">{{ data.result.length }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ data.result ? data.result.length : 0 }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ data.totalUSDSpent }}</td>
         </tr>
       </tbody>
     </table>
@@ -41,6 +43,27 @@ export default {
         console.error("Fetch error: ", error);
       }
     },
+    async calculateTotalUSDSpent(data) {
+      const ethPriceResponse = await fetch(`https://block-explorer-api.mainnet.zksync.io/api?module=stats&action=ethprice`);
+      const ethPriceData = await ethPriceResponse.json();
+      const ethPrice = parseFloat(ethPriceData.result.ethusd);
+
+      let totalUSDSpent = 0;
+
+      for (const transaction of data.result) {
+        const gasUsed = parseInt(transaction.gasUsed);
+        const gasPrice = parseInt(transaction.gasPrice);
+        const gasFeesInEther = gasUsed * gasPrice / 1e18; // Convert to Ethereum
+        const gasFeesInUSD = gasFeesInEther * ethPrice;
+        totalUSDSpent += gasFeesInUSD;
+      }
+
+      return totalUSDSpent.toFixed(2); // Round to 2 decimal places
+    },
+    async getTotalUSDSpent(data) {
+      const totalUSDSpent = await this.calculateTotalUSDSpent(data);
+      return totalUSDSpent;
+    },
     async handleSubmit() {
       const linesArray = this.inputText.split('\n');
       this.walletData = {};
@@ -48,12 +71,13 @@ export default {
       for (const wallet of linesArray) {
         if (wallet) {
           const data = await this.fetchWalletData(wallet);
-          this.walletData[wallet] = data;
-          console.log(data); // Log fetched data for inspection
+          const totalUSDSpent = await this.calculateTotalUSDSpent(data);
+          this.walletData[wallet] = {
+            result: data.result,
+            totalUSDSpent: totalUSDSpent
+          };
         }
       }
-
-      console.log(this.walletData);
     }
   }
 }
