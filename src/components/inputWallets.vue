@@ -68,9 +68,16 @@ export default {
       }
       
       const timestamp = parseInt(transactions[0].timeStamp) * 1000; // Convert to milliseconds
-      const date = new Date(timestamp);
-      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-      return date.toLocaleString(undefined, options);
+      const lastTransactionDate = new Date(timestamp);
+      const currentDate = new Date();
+
+      const daysAgo = Math.floor((currentDate - lastTransactionDate) / (1000 * 60 * 60 * 24));
+
+      if (daysAgo === 0) {
+        return "today";
+      } else {
+        return `${daysAgo} day${daysAgo === 1 ? '' : 's'} ago`;
+      }
     },
     async handleSubmit() {
       const linesArray = this.inputText.split('\n');
