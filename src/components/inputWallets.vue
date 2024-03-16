@@ -6,10 +6,11 @@
     <table class="wallet-table mt-4" v-if="Object.keys(walletData).length > 0">
       <thead>
         <tr>
-          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Wallet</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Zksync Wallets</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Transactions</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Total gas spent</th>
           <th class="bg-gray-200 border border-gray-300 px-4 py-2">Last Transaction</th>
+          <th class="bg-gray-200 border border-gray-300 px-4 py-2">Wallet Age</th>
         </tr>
       </thead>
       <tbody>
@@ -18,11 +19,13 @@
           <td class="border border-gray-300 px-4 py-2">{{ data.result ? data.result.length : 0 }}</td>
           <td class="border border-gray-300 px-4 py-2">{{ data.totalUSDSpent }}</td>
           <td class="border border-gray-300 px-4 py-2">{{ getLastTransactionTimestamp(data.result) }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ data.walletAge }}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -51,7 +54,6 @@ export default {
       const ethPrice = parseFloat(ethPriceData.result.ethusd);
 
       let totalUSDSpent = 0;
-
       for (const transaction of data.result) {
         const gasUsed = parseInt(transaction.gasUsed);
         const gasPrice = parseInt(transaction.gasPrice);
@@ -59,14 +61,12 @@ export default {
         const gasFeesInUSD = gasFeesInEther * ethPrice;
         totalUSDSpent += gasFeesInUSD;
       }
-
-      return totalUSDSpent.toFixed(2); // Round to 2 decimal places
+      return totalUSDSpent.toFixed(2);
     },
     getLastTransactionTimestamp(transactions) {
       if (!transactions || transactions.length === 0) {
         return "No transactions";
       }
-      
       const timestamp = parseInt(transactions[0].timeStamp) * 1000; // Convert to milliseconds
       const lastTransactionDate = new Date(timestamp);
       const currentDate = new Date();
@@ -79,6 +79,15 @@ export default {
         return `${daysAgo} day${daysAgo === 1 ? '' : 's'} ago`;
       }
     },
+    getWalletAge(transactions) {
+      if (!transactions || transactions.length === 0) {
+        return "No interactions";
+      }
+      const firstTransactionTimestamp = parseInt(transactions[transactions.length - 1].timeStamp) * 1000; // Convert to milliseconds
+      const firstTransactionDate = new Date(firstTransactionTimestamp);
+      return firstTransactionDate.toLocaleDateString();
+    },
+
     async handleSubmit() {
       const linesArray = this.inputText.split('\n');
       this.walletData = {};
@@ -87,9 +96,11 @@ export default {
         if (wallet) {
           const data = await this.fetchWalletData(wallet);
           const totalUSDSpent = await this.calculateTotalUSDSpent(data);
+          const walletAge = this.getWalletAge(data.result);
           this.walletData[wallet] = {
             result: data.result,
-            totalUSDSpent: totalUSDSpent
+            totalUSDSpent: totalUSDSpent,
+            walletAge: walletAge
           };
         }
       }
