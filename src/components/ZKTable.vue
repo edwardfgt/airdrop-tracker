@@ -18,7 +18,7 @@
   </template>
   
   <script>
-  import WalletRow from './WalletRow.vue';
+  import WalletRow from './ZKRow.vue';
   
   export default {
     components: {

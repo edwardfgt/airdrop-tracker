@@ -7,7 +7,7 @@
 
 <script>
 import WalletInput from './components/WalletInput.vue';
-import WalletTable from './components/WalletTable.vue';
+import WalletTable from './components/ZKTable.vue';
 
 export default {
   components: {
@@ -20,7 +20,19 @@ export default {
     };
   },
   methods: {
-    async fetchWalletData(wallet) {
+    async fetchZksData(wallet) {
+      const url = `https://block-explorer-api.mainnet.zksync.io/api?module=account&action=txlist&page=1&offset=1000&sort=desc&endblock=99999999&startblock=0&address=${wallet}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Fetch error: ", error);
+      }
+    },
+    async fetchScrollData(wallet) {
       const url = `https://block-explorer-api.mainnet.zksync.io/api?module=account&action=txlist&page=1&offset=1000&sort=desc&endblock=99999999&startblock=0&address=${wallet}`;
       try {
         const response = await fetch(url);
@@ -78,7 +90,7 @@ export default {
 
       for (const wallet of linesArray) {
         if (wallet) {
-          const data = await this.fetchWalletData(wallet);
+          const data = await this.fetchZksData(wallet);
           const totalUSDSpent = await this.calculateTotalUSDSpent(data);
           const walletAge = this.getWalletAge(data.result);
           this.walletData[wallet] = {
